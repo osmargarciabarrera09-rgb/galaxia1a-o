@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Capítulo 2 — Nuestro Primer Año 💫</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      background: #0d0820;
+      color: #f0e6ff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ===== FONDO ESTRELLADO (canvas fijo) ===== */
+    #stars-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ===== CONTENIDO ENCIMA DEL FONDO ===== */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 60px 20px 100px;
+    }
+
+    /* ===== ENCABEZADO ===== */
+    .chapter-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .chapter-header .tag {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #b980ff;
+      border: 1px solid rgba(185,128,255,0.35);
+      border-radius: 999px;
+      padding: 4px 14px;
+      margin-bottom: 18px;
+    }
+
+    .chapter-header h1 {
+      font-size: clamp(26px, 6vw, 42px);
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 0%, #d0a0ff 50%, #80c8ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+    }
+
+    .chapter-header p {
+      font-size: 15px;
+      color: #c0a0e0;
+      line-height: 1.7;
+    }
+
+    /* ===== SEPARADOR DECORATIVO ===== */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 50px 0 40px;
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(185,128,255,0.4), transparent);
+    }
+    .divider span {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ===== SECCIÓN DE CARTAS ===== */
+    .section-title {
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #9060cc;
+      margin-bottom: 30px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    /* Carta de amor */
+    .love-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(185, 128, 255, 0.20);
+      border-radius: 20px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .love-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(106,17,203,0.08) 0%, rgba(37,117,252,0.05) 100%);
+      pointer-events: none;
+    }
+
+    .love-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(106,17,203,0.25);
+    }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e0c0ff;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      font-size: 14px;
+      color: #b090d0;
+      line-height: 1.75;
+    }
+
+    /* Borde brillante en hover */
+    .love-card:nth-child(1) { border-color: rgba(255,150,200,0.25); }
+    .love-card:nth-child(2) { border-color: rgba(120,200,255,0.25); }
+    .love-card:nth-child(3) { border-color: rgba(200,150,255,0.25); }
+    .love-card:nth-child(4) { border-color: rgba(255,200,100,0.25); }
+    .love-card:nth-child(5) { border-color: rgba(100,255,200,0.25); }
+
+    /* ===== SECCIÓN GALERÍA ===== */
+    .gallery-section {
+      margin-top: 20px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .gallery-item {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(185,128,255,0.18);
+      background: rgba(255,255,255,0.04);
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.04);
+      box-shadow: 0 8px 28px rgba(106,17,203,0.35);
+    }
+
+    /* Placeholder cuando no hay foto */
+    .gallery-item .placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: rgba(185,128,255,0.4);
+      font-size: 11px;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .gallery-item .placeholder span {
+      font-size: 22px;
+    }
+
+    /* Si se pone una imagen real */
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ===== LIGHTBOX ===== */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 16px;
+      box-shadow: 0 0 60px rgba(185,128,255,0.4);
+    }
+    #lightbox-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== BOTÓN VOLVER ===== */
+    .back-btn-wrap {
+      text-align: center;
+      margin-top: 70px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      box-shadow: 0 0 24px rgba(106,17,203,0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: pulseGlow 2.5s infinite;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 36px rgba(162,85,255,0.7);
+    }
+
+    @keyframes pulseGlow {
+      0%   { box-shadow: 0 0 16px rgba(106,17,203,0.4); }
+      50%  { box-shadow: 0 0 32px rgba(162,85,255,0.8); }
+      100% { box-shadow: 0 0 16px rgba(106,17,203,0.4); }
+    }
+
+    /* ===== SCROLL SUAVE DECORATIVO (orbes flotantes) ===== */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.18;
+    }
+    .orb-1 { width: 420px; height: 420px; background: #6a11cb; top: -100px; left: -140px; }
+    .orb-2 { width: 340px; height: 340px; background: #2575fc; bottom: 80px; right: -120px; }
+    .orb-3 { width: 260px; height: 260px; background: #ff6ab0; top: 45%; left: 60%; }
+  </style>
+</head>
+<body>
+
+<!-- Fondo de estrellas animado -->
+<canvas id="stars-bg"></canvas>
+
+<!-- Orbes de color de fondo -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Lightbox para galería -->
+<div id="lightbox">
+  <button id="lightbox-close">✕</button>
+  <img id="lightbox-img" src="" alt="Foto">
+</div>
+
+<div class="page-wrapper">
+
+  <!-- ENCABEZADO -->
+  <header class="chapter-header">
+    <div class="tag">✦ Capítulo 2 ✦</div>
+    <h1>Nuestro Primer Año 🌌</h1>
+    <p>Un año lleno de momentos que guardo como estrellas.<br>Cada uno brilla diferente, pero todos me llevan a ti.</p>
+  </header>
+
+  <!-- ===== CARTAS DE AMOR ===== -->
+  <p class="section-title">✦ Cartas para ti ✦</p>
+
+  <div class="cards-grid">
+
+    <div class="love-card">
+      <span class="card-icon">💌</span>
+      <div class="card-title">Desde el primer día</div>
+      <div class="card-text">
+        No sé exactamente en qué momento pasó, pero de repente ya no imaginaba el día sin ti.
+        Aquí va todo lo que todavía no te he dicho en voz alta...
+      </div>
+    </div>
+
+    <div class="love-card">
+      <span class="card-icon">🌙</span>
+      <div class="card-title">Las noches contigo</div>
+      <div class="card-text">
+        Hay algo en las noches que me hace pensar más en ti. Tal vez porque es cuando
+        el mundo se calla y solo queda lo importante. Y lo importante siempre eres tú.
+      </div>
+    </div>
+
+    <div class="love-card">
+      <span class="card-icon">✨</span>
+      <div class="card-title">Lo que me enseñaste</div>
+      <div class="card-text">
+        Contigo aprendí que querer a alguien no cansa, al contrario, da energía.
+        Me enseñaste a reírme de las cosas pequeñas y a valorar cada momento.
+      </div>
+    </div>
+
+    <div class="love-card">
+      <span class="card-icon">🌠</span>
+      <div class="card-title">Mi parte favorita del universo</div>
+      <div class="card-text">
+        Dicen que el espacio es infinito y yo lo creo, porque así me siento cuando estoy contigo.
+        Como si hubiera espacio para todo lo que quiero darte.
+      </div>
+    </div>
+
+    <div class="love-card">
+      <span class="card-icon">💛</span>
+      <div class="card-title">Para el siguiente año</div>
+      <div class="card-text">
+        Si el primero fue así, no puedo imaginar todo lo que viene.
+        Solo sé que quiero que sea contigo. Siempre contigo.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SEPARADOR -->
+  <div class="divider"><span>📸</span></div>
+
+  <!-- ===== GALERÍA ===== -->
+  <div class="gallery-section">
+    <p class="section-title">✦ Nuestros momentos ✦</p>
+
+    <div class="gallery-grid" id="gallery-grid">
+      <!--
+        Para agregar fotos reales reemplaza el div.placeholder por:
+        <img src="foto1.jpg" alt="Descripción">
+        dentro de cada .gallery-item
+      -->
+      <div class="gallery-item"><div class="placeholder"><span>🌸</span>Foto 1</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>💫</span>Foto 2</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🌙</span>Foto 3</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>✨</span>Foto 4</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>💛</span>Foto 5</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🌠</span>Foto 6</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>💜</span>Foto 7</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🌌</span>Foto 8</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🦋</span>Foto 9</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>💕</span>Foto 10</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>⭐</span>Foto 11</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🌷</span>Foto 12</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🎶</span>Foto 13</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>🌙</span>Foto 14</div></div>
+      <div class="gallery-item"><div class="placeholder"><span>💖</span>Foto 15</div></div>
+    </div>
+  </div>
+
+  <!-- BOTÓN VOLVER -->
+  <div class="back-btn-wrap">
+    <a href="amor.html" class="back-btn">
+      🚀 Volver a la galaxia
+    </a>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<script>
+  // ===== FONDO DE ESTRELLAS =====
+  (function () {
+    const canvas = document.getElementById('stars-bg');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      buildStars();
+    }
+
+    function buildStars() {
+      stars = [];
+      const n = Math.floor((canvas.width * canvas.height) / 3000);
+      for (let i = 0; i < n; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.4 + 0.2,
+          a: Math.random(),
+          speed: 0.003 + Math.random() * 0.008,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
+    function drawStars(t) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const s of stars) {
+        const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(drawStars);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(drawStars);
+  })();
+
+  // ===== LIGHTBOX =====
+  (function () {
+    const lb      = document.getElementById('lightbox');
+    const lbImg   = document.getElementById('lightbox-img');
+    const lbClose = document.getElementById('lightbox-close');
+
+    document.getElementById('gallery-grid').addEventListener('click', (e) => {
+      const item = e.target.closest('.gallery-item');
+      if (!item) return;
+      const img = item.querySelector('img');
+      if (!img) return; // sin foto real todavía
+      lbImg.src = img.src;
+      lb.classList.add('open');
+    });
+
+    lbClose.addEventListener('click', () => lb.classList.remove('open'));
+    lb.addEventListener('click', (e) => { if (e.target === lb) lb.classList.remove('open'); });
+  })();
+</script>
+
+</body>
+</html>
